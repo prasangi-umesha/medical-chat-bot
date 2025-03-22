@@ -1,0 +1,147 @@
+import streamlit as st
+from langchain_openai import ChatOpenAI
+
+# Streamlit app configuration
+st.set_page_config(page_title="Aesculapius Bot", layout="wide")  # Updated page title
+
+# Initialize the ChatOpenAI model
+llm = ChatOpenAI(
+    model="gpt-3.5-turbo",
+    temperature=0
+)
+
+# Inject custom CSS for styling
+st.markdown(
+    """
+    <style>
+    /* Style the entire app */
+    body {
+        background-color: #eef2f5; /* Light blue-gray background for the app */
+        font-family: 'Arial', sans-serif;
+    }
+
+    /* Chat history styling */
+    .chat-message {
+        margin: 10px 0;
+        padding: 15px;
+        border-radius: 10px;
+        font-size: 16px;
+        line-height: 1.5;
+        max-width: 80%; /* Ensure messages don't stretch too wide */
+    }
+    .user-message {
+        background-color: #d1e7dd; /* Light green for user messages */
+        color: #0f5132;
+        text-align: left;
+        margin-left: auto;
+    }
+    .bot-message {
+        background-color: #cfe2ff; /* Light blue for bot messages */
+        color: #084298;
+        text-align: left;
+        margin-right: auto;
+    }
+
+    /* Input field styling */
+    .stTextInput>div>div {
+        border-radius: 10px;
+        padding: 10px;
+        border: 1px solid #d1d1d1;
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .stTextInput input {
+        border: none;
+        padding: 10px;
+        border-radius: 5px;
+        width: 100%; /* Ensure input takes full width */
+    }
+    .stTextInput input:focus {
+        outline: none;
+        border: 2px solid #007bff;
+    }
+
+    /* Sidebar styling */
+    .sidebar .markdown-text-container {
+        font-size: 14px;
+        color: #6c757d;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .chat-message {
+            font-size: 14px;
+            padding: 10px;
+            max-width: 90%; /* Reduce width on smaller screens */
+        }
+
+        .stTextInput>div>div {
+            padding: 8px;
+        }
+
+        .stTextInput input {
+            padding: 8px;
+        }
+
+        body {
+            font-size: 14px; /* Adjust base font size for smaller screens */
+        }
+    }
+
+    @media (max-width: 480px) {
+        .chat-message {
+            font-size: 12px;
+            padding: 8px;
+        }
+
+        .stTextInput>div>div {
+            padding: 5px;
+        }
+
+        .stTextInput input {
+            padding: 6px;
+        }
+
+        body {
+            font-size: 12px; /* Further adjust base font size for very small screens */
+        }
+    }
+</style>
+
+    """,
+    unsafe_allow_html=True,
+)
+
+# Initialize session state to store conversation history
+if "conversation" not in st.session_state:
+    st.session_state.conversation = []
+
+# Title with a Latin medical name
+st.title("Medibot 🤖")  # Updated title
+
+# Input field with a personalized label
+st.write("#### Let me assist you! ")
+user_input = st.text_input("How can I help you today?")
+
+# Handle user input and generate a response
+if user_input:
+    # Generate a response
+    response = llm(user_input)
+    main_content = response.content  # Get the content of the response
+    
+    # Add the user input and AI response to the conversation history
+    st.session_state.conversation.append({"user": user_input, "bot": main_content})
+
+# Display the conversation history with a more attractive name
+st.write("### Dialogue Record 📜")  # Updated subtitle for conversation history
+for message in st.session_state.conversation:
+    st.markdown(
+        f"""
+        <div class="chat-message user-message">
+            <strong>You:</strong> {message['user']}
+        </div>
+        <div class="chat-message bot-message">
+            <strong>Bot:</strong> {message['bot']}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
